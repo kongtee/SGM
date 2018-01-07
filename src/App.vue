@@ -1,21 +1,16 @@
 <template>
-    <div class="">
-        sdfhshf
+    <div>
+        {{ msg }}
     </div>
 </template>
-<style lang="less">
+<style>
 </style>
 <script>
     export default {
-        store,
         data() {
-            return {};
-        },
-        computed: {},
-        watch: {},
-        mounted() {
-        },
-        filter: {},
-        methods: {}
+            return {
+                msg: 'wshdfsfh'
+            };
+        }
     };
 </script>
