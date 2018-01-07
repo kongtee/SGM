@@ -1,0 +1,33 @@
+{
+  "name": "SGM",
+  "version": "1.0.0",
+  "description": "SGM",
+  "main": "index.js",
+  "scripts": {
+    "start": "webpack-dev-server --env.NODE_ENV=dev --progress --watch --config ./build/webpack.dev.js",
+    "dev": "webpack --NODE_ENV=dev --progress --watch --config ./build/webpack.dev.js",
+    "test": "webpack --NODE_ENV=test --progress --watch --config ./build/webpack.test.js",
+    "prod": "webpack --NODE_ENV=prod --progress --watch --config ./build/webpack.prod.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kongtee/SGM.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/kongtee/SGM/issues"
+  },
+  "homepage": "https://github.com/kongtee/SGM#readme",
+  "devDependencies": {
+    "html-webpack-plugin": "^2.30.1",
+    "webpack": "^3.10.0",
+    "webpack-dev-server": "^2.9.7",
+    "webpack-merge": "^4.1.1"
+  },
+  "dependencies": {
+    "element-ui": "^2.0.10",
+    "vue": "^2.5.13"
+  }
+}

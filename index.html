@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, shrink-to-fit=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="format-detection" content="telephone=no">
+    <meta http-equiv="x-dns-prefetch-control" content="on">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="screen-orientation" content="portrait">
+    <meta name="x5-orientation" content="portrait">
+    <meta name="Keywords" content="SGM运营平台">
+    <title>天天直播</title>
+    <script type="text/javascript">
+        (function () {
+            var oHtml = document.getElementsByTagName('html')[0],
+                clientWidth = document.documentElement.clientWidth || document.body.clientWidth,
+                clientHeight = document.documentElement.clientHeight || document.body.clientHeight;
+            oHtml.style.fontSize = clientWidth / 3.75 + "px";
+            window.addEventListener("resize", function () {
+                var clientWidth = document.documentElement.clientWidth || document.body.clientWidth;
+                oHtml.style.fontSize = clientWidth / 3.75 + "px";
+                document.getElementsByTagName('body')[0].style.height = clientHeight + 'px';
+            });
+            window.addEventListener('DOMContentLoaded', function () {
+                document.getElementsByTagName('body')[0].style.height = clientHeight + 'px';
+            })
+        })();
+    </script>
+</head>
+<body>
+    <div id="app"></div>
+<script type="text/javascript" src="dist/js/bundle-2e250.js"></script></body>
+</html>
