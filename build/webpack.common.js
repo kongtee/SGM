@@ -6,6 +6,7 @@ const path = require('path');
 
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const CleanWebpackPlugin = require('clean-webpack-plugin');
+const ExtractTextPlugin = require('extract-text-webpack-plugin');
 
 const rootPath = path.join(__dirname, '..');
 const cleanPath = ['dist', '*.html'];
@@ -14,6 +15,14 @@ const cleanOption = {
     verbose: true,
     dry: false
 };
+const extractCSS = new ExtractTextPlugin({
+    filename: "/dist/css/[name]-[chunkHash:5].css",
+    allChunks: true
+});
+const extractLESS = new ExtractTextPlugin({
+    filename: "/dist/css/[name]-less-[chunkHash:5].css",
+    allChunks: true
+});
 
 module.exports = {
     entry: {
@@ -44,10 +53,17 @@ module.exports = {
             },
             {
                 test: /\.css$/,
-                use: [
-                    'style-loader',
-                    'css-loader'
-                ]
+                use: extractCSS.extract({
+                    fallback: 'style-loader',
+                    use: [
+                        { loader: 'css-loader', options: { importLoaders: 1 } },
+                        'postcss-loader'
+                    ]
+                })
+            },
+            {
+                test: /\.less$/i,
+                use: extractLESS.extract(['css-loader', 'less-loader'])
             },
             {
                 test: /\.(png|jpg|gif)$/,
@@ -63,7 +79,9 @@ module.exports = {
             filename: './index.html',
             template: './public/index.html',
             inject: true
-        })
+        }),
+        extractCSS,
+        extractLESS
         // new CleanWebpackPlugin(cleanPath, cleanOption)
     ]
 };
