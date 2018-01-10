@@ -33,7 +33,7 @@
         </el-menu>
     </aside>
 </template>
-<style lang="less" scoped>
+<style lang="less">
     @import "../../assets/css/var";
 
     .sidebar {
@@ -66,7 +66,7 @@
                 text-align: center;
             }
             .el-menu-item-group__title {
-                padding: 0px;
+                padding: 0;
             }
         }
         .el-submenu__title,
@@ -101,7 +101,7 @@
                                 name: '图组上传',
                                 path: '/imagesupload',
                                 component: function() {
-                                    return import('../../views/ImagesUpload.vue');
+                                    return import('../../views/images/ImagesUpload.vue');
                                 },
                                 meta: {}
                             }

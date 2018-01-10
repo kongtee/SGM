@@ -6,6 +6,9 @@
         <!-- 左侧菜单栏 start -->
         <sidebar/>
         <!-- 左侧菜单栏 end -->
+        <!-- 主体 start -->
+        <app-main/>
+        <!-- 主体 end -->
     </div>
 </template>
 <style lang="less">
@@ -14,11 +17,13 @@
 <script>
     import navbar from './components/comp/Navbar.vue';
     import sidebar from './components/comp/Sidebar.vue';
+    import appMain from './components/AppMain.vue';
 
     export default {
         components: {
             navbar,
-            sidebar
+            sidebar,
+            appMain
         },
         data() {
             return {

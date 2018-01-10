@@ -4,10 +4,14 @@
 import Vue from 'vue';
 import ElementUI from 'element-ui';
 import App from './App.vue';
+import router from './router';
 
-Vue.use(ElementUI);
+// import ImagesUpload from './views/ImagesUpload.vue';
+
+Vue.use(ElementUI, { size: 'small' });
 
 const app = new Vue({
+    router,
     ...App
 });
 
