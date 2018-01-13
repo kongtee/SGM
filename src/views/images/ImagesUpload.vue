@@ -11,9 +11,15 @@
                       element-loading-text="拼命加载中">
                 <el-table-column type="index" label="序号" width="45" align="center"></el-table-column>
                 <el-table-column prop="StyleID" label="图组ID" align="center"></el-table-column>
-                <el-table-column prop="StyleName" label="图组名称" align="center"></el-table-column>
-                <el-table-column prop="StyleType" :formatter="fmtImgageType" label="图组分类" align="center"></el-table-column>
-                <el-table-column prop="CreateTime" :formatter="fmtCreateTime" label="创建时间" align="center"></el-table-column>
+                <el-table-column label="图组名称" align="center">
+                    <template slot-scope="scope">
+                        <a href="javascript:void(0);" @click="onShowImageList(scope.row)">{{scope.row.StyleName}}</a>
+                    </template>
+                </el-table-column>
+                <el-table-column prop="StyleType" :formatter="fmtImgageType" label="图组分类"
+                                 align="center"></el-table-column>
+                <el-table-column prop="CreateTime" :formatter="fmtCreateTime" label="创建时间"
+                                 align="center"></el-table-column>
                 <el-table-column label="操作" align="center">
                     <template slot-scope="scope">
                         <el-button @click="onEdit(scope.row)" type="text" size="small">编辑</el-button>
@@ -32,6 +38,37 @@
             >
             </el-pagination>
         </card>
+
+        <el-dialog :title="imageFormTitle" :visible.sync="imageFormStatus" center width="450px">
+            <el-form ref="imageForm" :model="imageForm" label-width="130px" :inline="true">
+                <el-form-item label="图组名称" prop="account">
+                    <el-input v-model="imageForm.StyleName" placeholder="请输入图组名称" clearable></el-input>
+                </el-form-item>
+
+                <el-form-item label="图组分类">
+                    <el-select v-model="imageForm.StyleType" placeholder="请选择">
+                        <el-option
+                                v-for="item in imageStyleType"
+                                :key="item.value"
+                                :label="item.label"
+                                :value="item.value">
+                        </el-option>
+                    </el-select>
+                </el-form-item>
+
+                <!--<el-form-item label="上传图组">-->
+                <!--<image-upload-->
+                <!--:action="uploadUrl"-->
+                <!--:imageurl.sync="imageForm.licensePic"-->
+                <!--&gt;</image-upload>-->
+                <!--</el-form-item>-->
+            </el-form>
+
+            <span slot="footer" class="dialog-footer">
+                <el-button @click="onCancel">取消</el-button>
+                <el-button @click="onConfirm" type="primary">确认</el-button>
+            </span>
+        </el-dialog>
     </div>
 </template>
 <style lang="less">
@@ -51,10 +88,28 @@
         data() {
             return {
                 StyleList: [],
-                curPage: 0,
-                pageSize: 30,
+                curPage: 1,
+                pageSize: 3,
                 Total: 0,
-                loading: false
+                loading: false,
+                imageFormTitle: '新建图组',
+                imageFormStatus: false,
+                imageForm: {},
+                imageFormType: 'create',
+                imageStyleType: [
+                    {
+                        value: 1,
+                        label: 'banner'
+                    },
+                    {
+                        value: 2,
+                        label: '最新'
+                    },
+                    {
+                        value: 3,
+                        label: '推荐'
+                    }
+                ]
             };
         },
         computed: {},
@@ -69,8 +124,8 @@
                 axios.post(
                     'http://sgm.grassua.site/v2.0/image/querystylelist',
                     {
-                        QueryBegin: 0,
-                        QueryNum: 10
+                        QueryBegin: (this.curPage - 1) * this.pageSize,
+                        QueryNum: this.pageSize
                     }
                 )
                     .then(response => {
@@ -86,14 +141,62 @@
                         console.log('axios:', error);
                     });
             },
+            /**
+             * 新建相册弹窗
+             */
             onNewImages: function() {
-
+                this.imageFormType = 'create';
+                this.imageFormTitle = '新建图组';
+                this.imageFormStatus = true;
+                this.imageForm = {};
             },
+            /**
+             * 编辑相册弹窗
+             */
             onEdit: function(row) {
-
+                let data = { ...row };
+                this.imageFormType = 'edit';
+                this.imageFormTitle = '编辑图组';
+                this.imageFormStatus = true;
+                this.imageForm = data;
             },
+            /**
+             * 删除相册
+             */
             onDelete: function(row) {
+                let url = 'http://sgm.grassua.site/v2.0/image/deletestyle';
+                let param = {
+                    StyleID: row.StyleID
+                };
 
+                this.$confirm('此操作将永久删除该相册, 是否继续?', '提示', {
+                    confirmButtonText: '确定',
+                    cancelButtonText: '取消',
+                    type: 'warning',
+                    center: true
+                }).then(() => {
+                    axios.post(url, param)
+                        .then(response => {
+                            let data = response && response.data || {};
+                            if (data.RspHeader && data.RspHeader.ErrNo == 200) {
+                                this.$message({
+                                    message: '创建相册成功',
+                                    type: 'success'
+                                });
+                                this.fetch();
+                            } else {
+                                this.$message.error(data.RspHeader.ErrMsg);
+                            }
+                        })
+                        .catch(error => {
+                            this.$message.error(error);
+                        });
+                }).catch(() => {
+                    this.$message({
+                        type: 'info',
+                        message: '已取消删除'
+                    });
+                });
             },
             onChangePage: function() {
 
@@ -121,6 +224,46 @@
              */
             fmtCreateTime: function(row) {
                 return date.toFormat(row.CreateTime * 1000, 'yyyy-MM-dd hh:mm:ss')
+            },
+            close: function() {
+                this.imageFormStatus = false;
+                this.fetch();
+            },
+            /**
+             * 新建/编辑 相册确认
+             */
+            onConfirm: function() {
+                let url = 'http://sgm.grassua.site/v2.0/image/createstyle';
+                if (this.imageFormType === 'edit') {
+                    url = '';
+                }
+
+                axios.post(url, this.imageForm)
+                    .then(response => {
+                        let data = response && response.data || {};
+                        if (data.RspHeader && data.RspHeader.ErrNo == 200) {
+                            this.$message({
+                                message: '创建相册成功',
+                                type: 'success'
+                            });
+                            this.close();
+                        } else {
+                            this.$message.error(data.RspHeader.ErrMsg);
+                        }
+                    })
+                    .catch(error => {
+                        this.$message.error(error);
+                    });
+            },
+            onCancel: function() {
+                this.imageFormStatus = false;
+            },
+            /**
+             * 展示图片列表
+             * @param row
+             */
+            onShowImageList: function(row) {
+                console.log('onShowImageListL', row);
             }
         }
     };
