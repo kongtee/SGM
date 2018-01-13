@@ -45,6 +45,7 @@
     "webpack-merge": "^4.1.1"
   },
   "dependencies": {
+    "axios": "^0.17.1",
     "element-ui": "^2.0.10",
     "vue": "^2.5.13",
     "vue-router": "^3.0.1",

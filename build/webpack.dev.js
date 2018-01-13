@@ -11,8 +11,12 @@ module.exports = merge(common, {
     devtool: 'eval-source-map',
     devServer: {
         contentBase: rootPath + "/dist",
-        open: true,
-        openPage: 'index.html'
+        disableHostCheck: true
+        // proxy: {
+        //     "/v2.0": "https://grassua.site/"
+        // }
+        // open: true
+        // openPage: 'index.html'
         // hot: true
     },
     plugins: [
