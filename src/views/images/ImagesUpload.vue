@@ -39,6 +39,7 @@
             </el-pagination>
         </card>
 
+        <!-- 新建/编辑 start -->
         <el-dialog :title="imageFormTitle" :visible.sync="imageFormStatus" center width="450px">
             <el-form ref="imageForm" :model="imageForm" label-width="130px" :inline="true">
                 <el-form-item label="图组名称" prop="account">
@@ -55,13 +56,6 @@
                         </el-option>
                     </el-select>
                 </el-form-item>
-
-                <!--<el-form-item label="上传图组">-->
-                <!--<image-upload-->
-                <!--:action="uploadUrl"-->
-                <!--:imageurl.sync="imageForm.licensePic"-->
-                <!--&gt;</image-upload>-->
-                <!--</el-form-item>-->
             </el-form>
 
             <span slot="footer" class="dialog-footer">
@@ -69,10 +63,69 @@
                 <el-button @click="onConfirm" type="primary">确认</el-button>
             </span>
         </el-dialog>
+        <!-- 新建/编辑 end -->
+
+        <!-- 图组列表 start -->
+        <el-dialog title="图组列表" :visible.sync="imageListStatus" center width="800px">
+            <ul class="image-list">
+                <li class="image-item" v-for="image in imageList">
+                    <img class="image-origin" :src="image.Url" :data-id="image.ImageID"/>
+                    <a class="image-close" href="javascirpt:void(0);"></a>
+                </li>
+                <li class="image-item">
+                    <el-upload
+                            :multiple="false"
+                            action="https://jsonplaceholder.typicode.com/posts/"
+                            list-type="picture-card"
+                            :on-success="onUploadSuccess">
+                        <i class="el-icon-plus"></i>
+                    </el-upload>
+                </li>
+            </ul>
+        </el-dialog>
+        <!-- 图组列表 end -->
     </div>
 </template>
 <style lang="less">
+    .image-list {
+        display: flex;
+        justify-content: space-between;
+        flex-wrap: wrap;
 
+        .image-item {
+            display: flex;
+            align-items: center;
+            width: 135px;
+            height: 240px;
+            position: relative;
+            border: 1px solid #e5e5e5;
+            box-shadow: 3px 3px 3px 0 #e5e5e5;
+            margin-bottom: 20px;
+            border-radius: 5px;
+
+            .image-origin {
+                width: 100%;
+            }
+
+            .image-close {
+                position: absolute;
+                right: -15px;
+                top: -15px;
+                height: 30px;
+                width: 30px;
+                border-radius: 50%;
+                background: url('../../assets/images/close.png') 0 0 no-repeat;
+                background-size: 30px 30px;
+            }
+
+            .el-upload--picture-card {
+                border-radius: 5px;
+                width: 135px;
+                height: 240px;
+                line-height: 246px;
+            }
+        }
+    }
 </style>
 <script>
     import card from '../../components/common/Card.vue';
@@ -89,7 +142,7 @@
             return {
                 StyleList: [],
                 curPage: 1,
-                pageSize: 3,
+                pageSize: 30,
                 Total: 0,
                 loading: false,
                 imageFormTitle: '新建图组',
@@ -109,7 +162,9 @@
                         value: 3,
                         label: '推荐'
                     }
-                ]
+                ],
+                imageListStatus: false,
+                imageList: []
             };
         },
         computed: {},
@@ -198,8 +253,9 @@
                     });
                 });
             },
-            onChangePage: function() {
-
+            onChangePage: function(page) {
+                this.curPage = page;
+                this.fetch();
             },
             /**
              * 格式化图组分类
@@ -235,7 +291,7 @@
             onConfirm: function() {
                 let url = 'http://sgm.grassua.site/v2.0/image/createstyle';
                 if (this.imageFormType === 'edit') {
-                    url = '';
+                    url = 'http://sgm.grassua.site/v2.0/image/updatestyle';
                 }
 
                 axios.post(url, this.imageForm)
@@ -263,7 +319,28 @@
              * @param row
              */
             onShowImageList: function(row) {
-                console.log('onShowImageListL', row);
+                this.imageListStatus = true;
+                let url = 'http://sgm.grassua.site/v2.0/image/queryresourcelist';
+                let param = {
+                    StyleID: row.StyleID
+                };
+
+                axios.post(url, param)
+                    .then(response => {
+                        let data = response && response.data || {};
+                        if (data.RspHeader && data.RspHeader.ErrNo == 200) {
+                            console.log(data.RspJson);
+                            this.imageList = data.RspJson.UrlList;
+                        } else {
+                            this.$message.error(data.RspHeader.ErrMsg);
+                        }
+                    })
+                    .catch(error => {
+                        this.$message.error(error);
+                    });
+            },
+            onUploadSuccess(res, file) {
+                this.imageUrl = URL.createObjectURL(file.raw);
             }
         }
     };
