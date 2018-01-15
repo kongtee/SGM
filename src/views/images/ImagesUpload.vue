@@ -75,9 +75,11 @@
                 <li class="image-item">
                     <el-upload
                             :multiple="false"
-                            action="https://jsonplaceholder.typicode.com/posts/"
+                            action=""
                             list-type="picture-card"
-                            :on-success="onUploadSuccess">
+                            :before-upload="onBeforeUpload"
+                            :on-success="onUploadSuccess"
+                            :on-error="onUploadError">
                         <i class="el-icon-plus"></i>
                     </el-upload>
                 </li>
@@ -124,6 +126,16 @@
                 height: 240px;
                 line-height: 246px;
             }
+
+            & > div {
+                display: flex;
+            }
+
+            .el-upload-list__item {
+                width: 135px;
+                height: 240px;
+                margin: 0 10px 0 0;
+            }
         }
     }
 </style>
@@ -132,6 +144,7 @@
     import flexBox from '../../components/common/FlexBox.vue';
     import axios from 'axios';
     import date from '../../lib/common/date';
+    import uploadfile from '../../lib/common/uploadfile';
 
     export default {
         components: {
@@ -164,7 +177,8 @@
                     }
                 ],
                 imageListStatus: false,
-                imageList: []
+                imageList: [],
+                curStyleID: 0
             };
         },
         computed: {},
@@ -315,21 +329,18 @@
                 this.imageFormStatus = false;
             },
             /**
-             * 展示图片列表
-             * @param row
+             * 获取图组列表
              */
-            onShowImageList: function(row) {
-                this.imageListStatus = true;
+            getImageList(StyleID) {
                 let url = 'http://sgm.grassua.site/v2.0/image/queryresourcelist';
                 let param = {
-                    StyleID: row.StyleID
+                    StyleID: StyleID
                 };
 
                 axios.post(url, param)
                     .then(response => {
                         let data = response && response.data || {};
                         if (data.RspHeader && data.RspHeader.ErrNo == 200) {
-                            console.log(data.RspJson);
                             this.imageList = data.RspJson.UrlList;
                         } else {
                             this.$message.error(data.RspHeader.ErrMsg);
@@ -339,8 +350,44 @@
                         this.$message.error(error);
                     });
             },
+            /**
+             * 展示图片列表
+             * @param row
+             */
+            onShowImageList: function(row) {
+                this.imageListStatus = true;
+                this.curStyleID = row.StyleID;
+                this.getImageList(this.curStyleID);
+
+            },
+            onBeforeUpload(file) {
+                console.log(file);
+                uploadfile.getImgBase64(file, (base64, filename) => {
+                    let url = 'http://sgm.grassua.site/v2.0/image/uploadimage';
+                    let param = {
+                        StyleID: this.curStyleID,
+                        Image: base64
+                    };
+                    axios.post(url, param)
+                        .then(response => {
+                            let data = response && response.data || {};
+                            if (data.RspHeader && data.RspHeader.ErrNo == 200) {
+                                console.log('onBeforeUpload:', data.RspJson);
+                            } else {
+                                this.$message.error(data.RspHeader.ErrMsg);
+                            }
+                        })
+                        .catch(error => {
+                            this.$message.error(error);
+                        });
+                });
+            },
             onUploadSuccess(res, file) {
-                this.imageUrl = URL.createObjectURL(file.raw);
+                this.getImageList(this.curStyleID);
+                //                this.imageUrl = URL.createObjectURL(file.raw);
+            },
+            onUploadError(err, file, fileList) {
+                this.$message.error('上传图片出错');
             }
         }
     };

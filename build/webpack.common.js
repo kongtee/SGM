@@ -26,7 +26,9 @@ const extractLESS = new ExtractTextPlugin({
 
 module.exports = {
     entry: {
-        index: rootPath + "/src/index.js"
+        index: rootPath + "/src/index.js",
+        vue: ["vue", "vuex", "axios"],
+        element: ["element-ui"]
     },
     output: {
         path: rootPath + "/dist/js/",
@@ -81,7 +83,15 @@ module.exports = {
             inject: true
         }),
         extractCSS,
-        extractLESS
+        extractLESS,
+        new webpack.optimize.CommonsChunkPlugin({
+            names: ["vendor", "element"],
+            minChunks: Infinity
+        }),
+        new webpack.optimize.CommonsChunkPlugin({
+            name: "manifest",
+            minChunks: Infinity
+        })
         // new CleanWebpackPlugin(cleanPath, cleanOption)
     ]
 };
