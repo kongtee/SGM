@@ -5,16 +5,16 @@ const webpack = require('webpack');
 const path = require('path');
 
 const HtmlWebpackPlugin = require('html-webpack-plugin');
-const CleanWebpackPlugin = require('clean-webpack-plugin');
+// const CleanWebpackPlugin = require('clean-webpack-plugin');
 const ExtractTextPlugin = require('extract-text-webpack-plugin');
 
 const rootPath = path.join(__dirname, '..');
-const cleanPath = ['dist', '*.html'];
-const cleanOption = {
-    root: rootPath,
-    verbose: true,
-    dry: false
-};
+// const cleanPath = ['dist', '*.html'];
+// const cleanOption = {
+//     root: rootPath,
+//     verbose: true,
+//     dry: false
+// };
 const extractCSS = new ExtractTextPlugin({
     filename: "/dist/css/[name]-[chunkHash:5].css",
     allChunks: true

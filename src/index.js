@@ -6,8 +6,6 @@ import ElementUI from 'element-ui';
 import App from './App.vue';
 import router from './router';
 
-// import ImagesUpload from './views/ImagesUpload.vue';
-
 Vue.use(ElementUI, { size: 'small' });
 
 const app = new Vue({

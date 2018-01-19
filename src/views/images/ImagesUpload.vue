@@ -142,21 +142,21 @@
 <script>
     import card from '../../components/common/Card.vue';
     import flexBox from '../../components/common/FlexBox.vue';
-    import axios from 'axios';
     import date from '../../lib/common/date';
     import uploadfile from '../../lib/common/uploadfile';
+    import store from '../../store/images/imagesUpload';
+    import { mapState, mapActions } from 'vuex';
 
     export default {
+        store,
         components: {
             card,
             flexBox
         },
         data() {
             return {
-                StyleList: [],
                 curPage: 1,
                 pageSize: 30,
-                Total: 0,
                 loading: false,
                 imageFormTitle: '新建图组',
                 imageFormStatus: false,
@@ -177,37 +177,33 @@
                     }
                 ],
                 imageListStatus: false,
-                imageList: [],
                 curStyleID: 0
             };
         },
-        computed: {},
+        computed: {
+            ...mapState(['StyleList', 'Total', 'imageList'])
+        },
         watch: {},
         mounted() {
             this.fetch();
         },
         filter: {},
         methods: {
+            ...mapActions(['querystylelist', 'deletestyle', 'createstyle', 'updatestyle', 'queryresourcelist', 'uploadimage']),
             fetch: function() {
                 this.loading = true;
-                axios.post(
-                    'http://sgm.grassua.site/v2.0/image/querystylelist',
-                    {
-                        QueryBegin: (this.curPage - 1) * this.pageSize,
-                        QueryNum: this.pageSize
-                    }
-                )
-                    .then(response => {
+                let param = {
+                    QueryBegin: (this.curPage - 1) * this.pageSize,
+                    QueryNum: this.pageSize
+                };
+                this.$store.dispatch('querystylelist', param)
+                    .then(() => {
                         this.loading = false;
-                        let data = response && response.data || {};
-                        if (data.RspHeader && data.RspHeader.ErrNo == 200) {
-                            let rspJson = data.RspJson;
-                            this.Total = rspJson.Total;
-                            this.StyleList = rspJson.StyleList;
-                        }
                     })
                     .catch(error => {
-                        console.log('axios:', error);
+                        this.loading = false;
+                        this.$message.error(error);
+                        console.log('error', error);
                     });
             },
             /**
@@ -233,29 +229,22 @@
              * 删除相册
              */
             onDelete: function(row) {
-                let url = 'http://sgm.grassua.site/v2.0/image/deletestyle';
-                let param = {
-                    StyleID: row.StyleID
-                };
-
                 this.$confirm('此操作将永久删除该相册, 是否继续?', '提示', {
                     confirmButtonText: '确定',
                     cancelButtonText: '取消',
                     type: 'warning',
                     center: true
                 }).then(() => {
-                    axios.post(url, param)
-                        .then(response => {
-                            let data = response && response.data || {};
-                            if (data.RspHeader && data.RspHeader.ErrNo == 200) {
-                                this.$message({
-                                    message: '创建相册成功',
-                                    type: 'success'
-                                });
-                                this.fetch();
-                            } else {
-                                this.$message.error(data.RspHeader.ErrMsg);
-                            }
+                    let param = {
+                        StyleID: row.StyleID
+                    };
+                    this.$store.dispatch('deletestyle', param)
+                        .then(() => {
+                            this.$message({
+                                message: '删除相册成功',
+                                type: 'success'
+                            });
+                            this.fetch();
                         })
                         .catch(error => {
                             this.$message.error(error);
@@ -303,23 +292,18 @@
              * 新建/编辑 相册确认
              */
             onConfirm: function() {
-                let url = 'http://sgm.grassua.site/v2.0/image/createstyle';
+                let mothed = 'createstyle';
                 if (this.imageFormType === 'edit') {
-                    url = 'http://sgm.grassua.site/v2.0/image/updatestyle';
+                    mothed = 'updatestyle';
                 }
 
-                axios.post(url, this.imageForm)
-                    .then(response => {
-                        let data = response && response.data || {};
-                        if (data.RspHeader && data.RspHeader.ErrNo == 200) {
-                            this.$message({
-                                message: '创建相册成功',
-                                type: 'success'
-                            });
-                            this.close();
-                        } else {
-                            this.$message.error(data.RspHeader.ErrMsg);
-                        }
+                this.$store.dispatch(mothed, this.imageForm)
+                    .then(() => {
+                        this.$message({
+                            message: '创建相册成功',
+                            type: 'success'
+                        });
+                        this.close();
                     })
                     .catch(error => {
                         this.$message.error(error);
@@ -332,19 +316,12 @@
              * 获取图组列表
              */
             getImageList(StyleID) {
-                let url = 'http://sgm.grassua.site/v2.0/image/queryresourcelist';
                 let param = {
                     StyleID: StyleID
                 };
 
-                axios.post(url, param)
-                    .then(response => {
-                        let data = response && response.data || {};
-                        if (data.RspHeader && data.RspHeader.ErrNo == 200) {
-                            this.imageList = data.RspJson.UrlList;
-                        } else {
-                            this.$message.error(data.RspHeader.ErrMsg);
-                        }
+                this.$store.dispatch('queryresourcelist', param)
+                    .then(() => {
                     })
                     .catch(error => {
                         this.$message.error(error);
@@ -363,19 +340,14 @@
             onBeforeUpload(file) {
                 console.log(file);
                 uploadfile.getImgBase64(file, (base64, filename) => {
-                    let url = 'http://sgm.grassua.site/v2.0/image/uploadimage';
                     let param = {
                         StyleID: this.curStyleID,
                         Image: base64
                     };
-                    axios.post(url, param)
-                        .then(response => {
-                            let data = response && response.data || {};
-                            if (data.RspHeader && data.RspHeader.ErrNo == 200) {
-                                console.log('onBeforeUpload:', data.RspJson);
-                            } else {
-                                this.$message.error(data.RspHeader.ErrMsg);
-                            }
+
+                    this.$store.dispatch('uploadimage', param)
+                        .then((data) => {
+                            console.log('onBeforeUpload:', data);
                         })
                         .catch(error => {
                             this.$message.error(error);
