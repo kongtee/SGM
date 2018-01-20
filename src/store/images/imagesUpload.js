@@ -38,6 +38,28 @@ const store = new Vuex.Store({
          */
         setImageList(state, images) {
             state.imageList = images;
+        },
+        /**
+         * 添加图片
+         * @param state
+         * @param ImageID
+         */
+        addImage(state, image) {
+            image.ImageID && state.imageList.push(image);
+        },
+        /**
+         * 删除图片
+         * @param state
+         * @param ImageID
+         */
+        deleteImage(state, ImageID) {
+            let len = state.imageList.length;
+            for (let i = 0; i < len; i++) {
+                if (state.imageList[i].ImageID === ImageID) {
+                    state.imageList.splice(i, 1);
+                    break;
+                }
+            }
         }
     },
     actions: {
@@ -143,8 +165,30 @@ const store = new Vuex.Store({
          * 上传并设置图片
          * @param param
          */
-        uploadimage({}, param) {
+        uploadimage({ commit }, param) {
             axios.post(image.uploadimage, param)
+                .then(response => {
+                    let data = response && response.data || {};
+                    if (data.RspHeader && data.RspHeader.ErrNo == 200) {
+                        console.log('uploadimage:', data.RspJson);
+                        commit('addImage', data.RspJson);
+                        return data.RspJson;
+                    } else {
+                        console.log('uploadimage2:', data.RspJson);
+                        throw data.RspHeader.ErrMsg;
+                    }
+                })
+                .catch(error => {
+                    console.log('uploadimage3:', error);
+                    throw error;
+                });
+        },
+        /**
+         * 删除图片资源
+         * @param param
+         */
+        deleteresource({}, param) {
+            axios.post(image.deleteresource, param)
                 .then(response => {
                     let data = response && response.data || {};
                     if (data.RspHeader && data.RspHeader.ErrNo == 200) {

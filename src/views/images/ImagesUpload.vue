@@ -70,7 +70,7 @@
             <ul class="image-list">
                 <li class="image-item" v-for="image in imageList">
                     <img class="image-origin" :src="image.Url" :data-id="image.ImageID"/>
-                    <a class="image-close" href="javascirpt:void(0);"></a>
+                    <a class="image-close" href="javascirpt:void(0);" @click="onDeleteImage(image.ImageID)"></a>
                 </li>
                 <li class="image-item">
                     <el-upload
@@ -91,7 +91,7 @@
 <style lang="less">
     .image-list {
         display: flex;
-        justify-content: space-between;
+        justify-content: space-evenly;
         flex-wrap: wrap;
 
         .image-item {
@@ -315,9 +315,9 @@
             /**
              * 获取图组列表
              */
-            getImageList(StyleID) {
+            getImageList() {
                 let param = {
-                    StyleID: StyleID
+                    StyleID: this.curStyleID
                 };
 
                 this.$store.dispatch('queryresourcelist', param)
@@ -334,12 +334,11 @@
             onShowImageList: function(row) {
                 this.imageListStatus = true;
                 this.curStyleID = row.StyleID;
-                this.getImageList(this.curStyleID);
+                this.getImageList();
 
             },
             onBeforeUpload(file) {
-                console.log(file);
-                uploadfile.getImgBase64(file, (base64, filename) => {
+                uploadfile.getImgBase64(file, (base64) => {
                     let param = {
                         StyleID: this.curStyleID,
                         Image: base64
@@ -353,13 +352,40 @@
                             this.$message.error(error);
                         });
                 });
+
+                return false;
             },
             onUploadSuccess(res, file) {
-                this.getImageList(this.curStyleID);
-                //                this.imageUrl = URL.createObjectURL(file.raw);
+                console.log('onUploadSuccess:', res, file);
             },
             onUploadError(err, file, fileList) {
+                console.log('onUploadError:', err, file, fileList);
                 this.$message.error('上传图片出错');
+            },
+            onDeleteImage(ImageID) {
+                this.$confirm('此操作将永久删除该图片, 是否继续?', '提示', {
+                    confirmButtonText: '确定',
+                    cancelButtonText: '取消',
+                    type: 'warning',
+                    center: true
+                }).then(() => {
+                    let param = {
+                        ImageID: ImageID
+                    };
+
+                    this.$store.dispatch('deleteresource', param)
+                        .then(() => {
+                            this.$store.commit('deleteImage', ImageID);
+                        })
+                        .catch(error => {
+                            this.$message.error(error);
+                        });
+                }).catch(() => {
+                    this.$message({
+                        type: 'info',
+                        message: '已取消删除'
+                    });
+                });
             }
         }
     };

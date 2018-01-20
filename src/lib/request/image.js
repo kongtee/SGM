@@ -17,7 +17,9 @@ const image = {
     //查询相册图片内容请求
     queryresourcelist: path + 'queryresourcelist',
     //上传并设置资源图片
-    uploadimage: path + 'uploadimage'
+    uploadimage: path + 'uploadimage',
+    //删除相册内图片资源
+    deleteresource: path + 'deleteresource'
 };
 
 export default image;
