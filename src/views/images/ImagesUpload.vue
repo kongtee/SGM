@@ -147,8 +147,25 @@
     import store from '../../store/images/imagesUpload';
     import { mapState, mapActions } from 'vuex';
 
+    const mixin = {
+        computed: {
+            ...mapState(['StyleList', 'Total', 'imageList'])
+        },
+        methods: {
+            ...mapActions([
+                'querystylelist',
+                'deletestyle',
+                'createstyle',
+                'updatestyle',
+                'queryresourcelist',
+                'uploadimage'
+            ])
+        }
+    };
+
     export default {
         store,
+        mixins: [mixin],
         components: {
             card,
             flexBox
@@ -181,7 +198,9 @@
             };
         },
         computed: {
-            ...mapState(['StyleList', 'Total', 'imageList'])
+            QueryBegin: function() {
+                return (this.curPage - 1) * this.pageSize;
+            }
         },
         watch: {},
         mounted() {
@@ -189,11 +208,10 @@
         },
         filter: {},
         methods: {
-            ...mapActions(['querystylelist', 'deletestyle', 'createstyle', 'updatestyle', 'queryresourcelist', 'uploadimage']),
             fetch: function() {
                 this.loading = true;
                 let param = {
-                    QueryBegin: (this.curPage - 1) * this.pageSize,
+                    QueryBegin: this.QueryBegin,
                     QueryNum: this.pageSize
                 };
                 this.$store.dispatch('querystylelist', param)
